@@ -14,21 +14,24 @@ def plot_head_rot(dataFrame: pd.DataFrame) -> None:
     plot_ypr(dataFrame, get_df_suffixed_axes_labels(dataFrame))
     plt.show()
 
-def plot_head_rot_comparison(dataFrame_1: pd.DataFrame, dataFrame_2: pd.DataFrame, timeDelay: float = 0., save_fig: bool = False, fig_name : str = 'figure') -> None:
+def plot_head_rot_comparison(dataFrame_1: pd.DataFrame, dataFrame_2: pd.DataFrame, time_delay: float = 0., show_fig: bool = True, save_fig: bool = False, fig_name : str = 'figure') -> None:
     axes_labels_1 = get_df_suffixed_axes_labels(dataFrame_1)
     axes_labels_2 = get_df_suffixed_axes_labels(dataFrame_2)
     if any(axis in axes_labels_2 for axis in axes_labels_1):
         axes_labels_1 = [axis + '_x' for axis in axes_labels_1]
         axes_labels_2 = [axis + '_y' for axis in axes_labels_2]
-    dataFrame_2['t'] = dataFrame_2['t'] - timeDelay
+    dataFrame_2['t'] = dataFrame_2['t'] - time_delay
     data_frame = pd.merge(dataFrame_1, dataFrame_2, on='t')
     plot_ypr(data_frame, [axes_labels_1[0], axes_labels_2[0], axes_labels_1[1], axes_labels_2[1]])
     plt.ylim([-150, 120])
     
     if save_fig:
         plt.savefig(fig_name)
-    else:
+    
+    if show_fig:
         plt.show()
+
+    plt.close()
 
 def create_data_frame(fileName: str, suffix: str = '') -> pd.DataFrame:    
     quats = read_quaternions(fileName)
@@ -78,22 +81,45 @@ def plot_ypr(df: pd.DataFrame, axes: list[str]) -> None:
     ax.set_ylabel("Angle (°)")
     df.rename_axis()
 
+def mean_angular_diff(original: pd.Series, repro: pd.Series) -> float:
+    length = min(len(original), len(repro))
+    original = original[:length]
+    repro = repro[:length]
+    return round((sum(abs(original - repro))) / length, 1)
+
+def mean_angular_diffs(original: pd.DataFrame, repro: pd.DataFrame) -> tuple:
+    yaw = mean_angular_diff(original.iloc[:,0], repro.iloc[:,0])
+    pitch = mean_angular_diff(original.iloc[:,1], repro.iloc[:,1])
+    return (yaw, pitch)
+    
 
 def main() -> None:
 
-    for i in range(0,6):
-
-        take_1 = os.path.join(HEADROTS_FOLDER, f'{i}.txt')
-        take_2 = os.path.join(HEADROTS_FOLDER, f'{i}_1.txt')
-
-        take_1_df = create_data_frame(take_1, '_o')
-        take_2_df = create_data_frame(take_2, '_r')
-        plot_head_rot_comparison(take_1_df, take_2_df, 0.3, False, rf"C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\MesuresMouvement\quaternion_speed\window_{i}.png")
-
-    #PlotHeadRotComparison(original, repro, '_ori', '_rep')
-
+    sentences = pd.read_csv(r'manip-dir-data\Phrases.csv')
+    sentences = sentences.sort_values(by = ['D','A','M','T','N','Rec_N'])
     
-    #PlotHeadRot(repro)
+
+    yaw_diffs = []
+    pitch_diffs = []
+    figure_names = []
+
+    for i in range(len(sentences)):
+        take = sentences.iloc[i]
+        original_file = os.path.join(HEADROTS_FOLDER, f'{take['ID']}.txt')
+        repro_file = os.path.join(HEADROTS_FOLDER, f'{take['ID']}_1.txt')
+
+        original = create_data_frame(original_file, '_o')
+        repro = create_data_frame(repro_file, '_r')
+        fig_name = rf"C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\Enregistrement_Anechoique\HeadRots_figs\{'_'.join(list(map(lambda x: str(x), take.iloc[:7])))}"
+        plot_head_rot_comparison(dataFrame_1 = original, dataFrame_2 = repro, time_delay = 0, show_fig = False, save_fig = False, fig_name = fig_name)
+        
+        diff_yaw, diff_pitch = mean_angular_diffs(original, repro)
+        yaw_diffs.append(diff_yaw)
+        pitch_diffs.append(diff_pitch)
+        figure_names.append(fig_name)
+    sentences.insert(loc = 7, column = 'd_Y', value = yaw_diffs)
+    sentences.insert(loc = 8, column = 'd_P', value = pitch_diffs)
+    sentences.insert(loc = 9, column = 'fig_n', value = figure_names)
 
 if __name__ == '__main__':
     main()
