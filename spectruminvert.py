@@ -4,12 +4,12 @@ Created on Feb 14 10:58:19 2024
 @author: Francois Salmon, Noise Makers
 """
 
+import os
 import numpy as np
 import soundfile as sf
 from scipy import signal, interpolate
 import matplotlib.pyplot as plt
 import pyloudnorm as pyln
-from glob import glob
 
 
 def frac_oct_smooth_fd(data_fd, frac=3):
@@ -94,6 +94,10 @@ def get_mag_corr(pmx_file, ref_file):
     # ensure that they have the same length
     y = y[:len(y0)]
     y0 = y0[:len(y)]
+    if y.ndim == 2:
+        y = np.mean(y, axis=1)
+    if y0.ndim == 2:
+        y0 = np.mean(y0, axis=1)
     # compute spectrograms
     f, t, sxx0 = signal.spectrogram(y0, fs=fs, mode='complex', nperseg=8192)
     sxx0 = np.abs(sxx0) / np.amax(np.abs(sxx0))
@@ -143,7 +147,7 @@ def get_rms(rfft):
     return rms
 
 
-def write_inverse_filter(pmx_file, ref_file, ntaps=4097, f_min=20, f_max=16000, figure=False):
+def write_inverse_filter(pmx_file, ref_file, ntaps=4097, f_min=20, f_max=16000, figure=False, return_gain=False):
     """
 
     :param pmx_file:
@@ -154,7 +158,16 @@ def write_inverse_filter(pmx_file, ref_file, ntaps=4097, f_min=20, f_max=16000, 
     :param figure:
     :return:
     """
-    mag, f, fs = get_mag_corr(pmx_file, ref_file)
+    if isinstance(pmx_file, list) and isinstance(ref_file, list):
+        mag = None
+        for i, p in enumerate(pmx_file):
+            mag_i, f, fs = get_mag_corr(p, ref_file[i])
+            if mag is None:
+                mag = np.zeros(len(mag_i))
+            mag += mag_i / len(pmx_file)
+    else:
+        mag, f, fs = get_mag_corr(pmx_file, ref_file)
+
     b_min = int(f_min * len(f) / fs * 2)
     b_max = int(f_max * len(f) / fs * 2)
     mag[:b_min] = mag[b_min]
@@ -171,17 +184,31 @@ def write_inverse_filter(pmx_file, ref_file, ntaps=4097, f_min=20, f_max=16000, 
         plt.ylim([-7, 16])
         plt.ylabel('Magnitude (dB)')
         plt.xlabel('Frequency (Hz)')
-        plt.title('Correction filter ' + pmx_file + ' vs ' + ref_file)
+        plt.title('Correction filter frequency response')
+        plt.legend(['Target', 'Filter response'])
         plt.show()
 
     inv /= np.amax(np.abs(inv))
-    filename = f'{pmx_file[:-4]}_inv_filter.wav'
+    if isinstance(pmx_file, list):
+        filename = f'{pmx_file[0][:-4]}_mean_inv_filter.wav'
+    else:
+        filename = f'{pmx_file[:-4]}_inv_filter.wav'
     sf.write(filename, inv, fs, subtype='PCM_32')
+
+    if return_gain:
+        if isinstance(pmx_file, list) and isinstance(ref_file, list):
+            gain = 0
+            for i, p in enumerate(pmx_file):
+                g = apply_correction(p, filename, loudness_ref_file=ref_file[i], return_gain=True)
+                gain += g / len(pmx_file)
+        else:
+            gain = apply_correction(pmx_file, filename, loudness_ref_file=ref_file, return_gain=True)
+        return filename, gain
 
     return filename
 
 
-def apply_correction(pmx_file, inv_file, loudness_ref_file=None):
+def apply_correction(pmx_file, inv_file, correction_gain=None, loudness_ref_file=None, return_gain=False, suffix=''):
     """
 
     :param pmx_file:
@@ -204,22 +231,47 @@ def apply_correction(pmx_file, inv_file, loudness_ref_file=None):
         y0, fs = sf.read(loudness_ref_file)
         target_l = meter.integrated_loudness(y0)
         l = meter.integrated_loudness(s)
-        s *= 10**((target_l - l)/20)
+        gain = 10**((target_l - l)/20)
+        s *= gain
+        if return_gain:
+            return gain
 
-    sf.write(f'{pmx_file[:-4]}_corr.wav', s, fs, subtype='PCM_24')
+    if correction_gain is None:
+        correction_gain = 1
+
+    sf.write(f'{pmx_file[:-4]}_corr{suffix}.wav', s * correction_gain, fs, subtype='PCM_24')
 
 
 def main():
-    # suffix = '001'
-    # pmx_file = f'KU100-Repro-{suffix}.wav'
-    # ref_file = f'KU100-{suffix}.wav'
-    # inv_file = write_inverse_filter(pmx_file, ref_file, figure=True)
+    # Méthode 1 qui fait ce qu'on veut. Dans le write_inverse_filter on peut mettre des listes en entrée pour calculer le filtre inverse d'après une moyenne sur plusieurs couples de fichiers
+    method = 1
 
-    pmx_file = r'C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\RepetitionCabine\MatchEQ\pmx_file.wav'
-    ref_file = r'C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\RepetitionCabine\MatchEQ\ref_file.wav'
-    inv_file = write_inverse_filter(pmx_file, ref_file, figure=True)
-    for file_to_correct in glob('C:/Users/User/Documents/Gaut/PostDoc/Manips/Directivité/RepetitionCabine/Media/*Arceau*[0-9].wav'):
-        apply_correction(file_to_correct, inv_file, loudness_ref_file = ref_file)
+    folder_path = r'C:\\Users\\User\\Documents\\Gaut\\PostDoc\\Manips\\Directivité\\RepetitionCabine\\'
+
+    ref_files = [folder_path + 'Media/' + f for f in os.listdir(folder_path + 'Media') if 'KU100' in f and 'Repro' not in f]
+    ref_files.sort()
+    pmx_files = [folder_path + 'Media/' + f for f in os.listdir(folder_path + 'Media') if 'KU100' in f and 'Repro' in f and 'corr' not in f and 'inv_filter' not in f]
+    pmx_files.sort()
+    arceau_files = [folder_path + 'Media/' + f for f in os.listdir(folder_path + 'Media') if 'Arceau' in f and 'corr' not in f and 'inv_filter' not in f]
+    arceau_files.sort()
+
+    if method == 1:
+        pmx_file = folder_path + 'MatchEQ/pmx_file.wav'
+        ref_file = folder_path + 'MatchEQ/ref_file.wav'
+        inv_file, gain = write_inverse_filter(pmx_file, ref_file, figure=True, return_gain=True)
+        for arceau_file in arceau_files:
+            apply_correction(arceau_file, inv_file, correction_gain=gain)
+
+    elif method == 2:
+        inv_file, gain = write_inverse_filter(pmx_files, ref_files, figure=True, return_gain=True)
+        for pmx_file in pmx_files:
+            apply_correction(pmx_file, inv_file, correction_gain=gain, suffix=str(method))
+
+    elif method == 3:
+        for i, pmx_file in enumerate(pmx_files):
+            inv_file = write_inverse_filter(pmx_file, ref_files[i], figure=True)
+            apply_correction(pmx_file, inv_file, loudness_ref_file=ref_files[i], suffix=str(method))
+
 
 if __name__ == "__main__":
     main()
