@@ -2,8 +2,10 @@ import pandas as pd
 from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
 import scipy.signal
+import os
 
 (_yaw, _pitch, _roll) = ('Yaw', 'Pitch', 'Roll')
+HEADROTS_FOLDER = r'C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\Enregistrement_Anechoique\HeadRots'
 
 def get_df_suffixed_axes_labels(data_frame: pd.DataFrame) -> list[str]:
     return [axis for axis in data_frame.columns if any(map(lambda a: a in axis, [_yaw, _pitch]))]
@@ -78,14 +80,15 @@ def plot_ypr(df: pd.DataFrame, axes: list[str]) -> None:
 
 
 def main() -> None:
+
     for i in range(0,6):
 
-        take_1 = rf"C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\MesuresMouvement\quaternion_speed\{i}.txt"
-        take_2 = rf"C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\MesuresMouvement\quaternion_speed\{i}_1.txt"
+        take_1 = os.path.join(HEADROTS_FOLDER, f'{i}.txt')
+        take_2 = os.path.join(HEADROTS_FOLDER, f'{i}_1.txt')
 
         take_1_df = create_data_frame(take_1, '_o')
         take_2_df = create_data_frame(take_2, '_r')
-        plot_head_rot_comparison(take_1_df, take_2_df, 0.3, True, rf"C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\MesuresMouvement\quaternion_speed\window_{i}.png")
+        plot_head_rot_comparison(take_1_df, take_2_df, 0.3, False, rf"C:\Users\User\Documents\Gaut\PostDoc\Manips\Directivité\MesuresMouvement\quaternion_speed\window_{i}.png")
 
     #PlotHeadRotComparison(original, repro, '_ori', '_rep')
 
