@@ -91,6 +91,16 @@ def mean_angular_diffs(original: pd.DataFrame, repro: pd.DataFrame) -> tuple:
     yaw = mean_angular_diff(original.iloc[:,0], repro.iloc[:,0])
     pitch = mean_angular_diff(original.iloc[:,1], repro.iloc[:,1])
     return (yaw, pitch)
+
+def write_visualization_md_file(sentences: pd.DataFrame) -> None:
+    output = '|0|1|2|\n|:---:|:---:|:---:|\n'
+    for r in range(0, len(sentences), 3):
+        takes = sentences.iloc[r], sentences.iloc[r+1], sentences.iloc[r+2]
+        output += '|'.join(list(map(lambda x: f'**{x.loc['ID']}** [{x.loc['d_Y']} ; {x.loc['d_P']}]' , takes))) + '\n'
+        output += '|'.join(list(map(lambda x: f'![alt text]({os.path.basename(x.loc['fig_n'])}.png)' , takes))) + '\n'
+    f = open(r'C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\utils_manip_directivite\angular_difference_visualization.md', 'w')
+    f.write(output)
+    f.close()
     
 
 def main() -> None:
@@ -120,6 +130,7 @@ def main() -> None:
     sentences.insert(loc = 7, column = 'd_Y', value = yaw_diffs)
     sentences.insert(loc = 8, column = 'd_P', value = pitch_diffs)
     sentences.insert(loc = 9, column = 'fig_n', value = figure_names)
+    write_visualization_md_file(sentences)
 
 if __name__ == '__main__':
     main()
