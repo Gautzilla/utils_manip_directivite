@@ -36,10 +36,9 @@ def add_repetition_ordering(sentences:pd.DataFrame, reaper_session: str) -> str:
         sentence = sentences.iloc[i]
         id = sentence.loc['ID']
         rec_repetition_rating = sentence.loc['M_r']
-        pattern = rf'MARKER {id} \d+ "\w+_\w+_\w+_\d+_\d+_\w+"'
+        pattern = rf'MARKER {id} \d+ "?\w+_\w+_\w+_\d+_\d+_\w+'
         old_marker_name = re.search(pattern, reaper_session).group()
-        new_marker_name = f'{old_marker_name.strip('"')}_{rec_repetition_rating}"'
-        print(f'Replacing {old_marker_name} with {new_marker_name}')
+        new_marker_name = f'{old_marker_name}_{rec_repetition_rating}'
         reaper_session = reaper_session.replace(old_marker_name, new_marker_name)
     return reaper_session
 
@@ -50,13 +49,14 @@ def write_new_session(reaper_session_name: str, reaper_session: str):
     f.close()
 
 def main():
-    folder = r'C:\Users\labsticc\Desktop\temp'
-    reaper_session_name = os.path.join(folder, 'EnregistrementAnechoique')
+    folder = r'C:\Users\labsticc\Desktop\EnregistrementAnechoique_correction_ku_omni'
+    reaper_session_name = os.path.join(folder, 'EnregistrementAnechoique_correction')
     reaper_session = get_reaper_session(reaper_session_name + '.rpp')
     phrases = pd.read_csv(os.path.join(folder, 'Phrases.csv'))
-    new_session = write_markers_names(phrases, reaper_session)
-    write_new_session(reaper_session_name + '_with_marker_names.rpp', new_session)
-    new_session_ratings = add_repetition_ordering(phrases, new_session)
+
+    #new_session = write_markers_names(phrases, reaper_session)
+    #write_new_session(reaper_session_name + '_with_marker_names.rpp', new_session)
+    new_session_ratings = add_repetition_ordering(phrases, reaper_session)
     write_new_session(reaper_session_name + '_with_ratings.rpp', new_session_ratings)
     
 if __name__ == '__main__':
