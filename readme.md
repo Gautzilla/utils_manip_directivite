@@ -12,3 +12,4 @@ This repo contains utilities that helped develop the [listening test application
 |`movement_analysis.py`|Plots the head movements written during the recording of the sentences, and computes the mean error between the movements of the human speaker and the reproduction of the movements by the loudspeaker.|
 |`reaper_session_marker_naming`|Rename the markers of the Reaper recording session, so that the audio files can be exported with a filename that explicit the state of the independant variable according to which they were recorded.|
 |`spectruminvert.py`|EQ matching between sounds emitted by the human speaker and by the loudspeaker that allow the timbre of the two sources to be similar in their facing direction.|
+|`extract_data.py`|Provides functions to add dummy data to the database (for testing purposes) and to recover the test results from the database as a pandas dataframe.|
