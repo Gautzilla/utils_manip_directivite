@@ -20,12 +20,17 @@ def remove_unused_files(audio_files_to_keep: list) -> int:
         count += 1
     return count
 
+def get_missing_files(audio_files_in_test: list) -> list:
+    return [audio_file for audio_file in audio_files_in_test if audio_file not in os.listdir(AUDIO_FOLDER)]
 
 def main() -> None:
     audio_files_in_test = get_all_audio_files()
 
     nb_removed_files = remove_unused_files(audio_files_to_keep = audio_files_in_test)
-    print(f'Deleted {nb_removed_files} files.')
+    print(f'Deleted files: {nb_removed_files}')
+
+    missing_files = get_missing_files(audio_files_in_test = audio_files_in_test)
+    print(f'Missing files: {len(missing_files)}')
 
 if __name__ == '__main__':
     main()
