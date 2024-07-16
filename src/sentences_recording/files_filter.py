@@ -10,13 +10,22 @@ def get_all_audio_files() -> list:
         query = 'SELECT recordings.audio_file FROM recordings'
         ratings = cursor.execute(query)
         return list([rating[0] for rating in ratings])
+    
+def remove_unused_files(audio_files_to_keep: list) -> int:
+    count = 0
+    for file in os.listdir(AUDIO_FOLDER):
+        if file in audio_files_to_keep:
+            continue
+        os.remove(os.path.join(AUDIO_FOLDER, file))
+        count += 1
+    return count
+
 
 def main() -> None:
     audio_files_in_test = get_all_audio_files()
-    for file in os.listdir(AUDIO_FOLDER):
-        if file in audio_files_in_test:
-            continue
-        os.remove(os.path.join(AUDIO_FOLDER, file))
+
+    nb_removed_files = remove_unused_files(audio_files_to_keep = audio_files_in_test)
+    print(f'Deleted {nb_removed_files} files.')
 
 if __name__ == '__main__':
     main()
