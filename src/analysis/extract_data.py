@@ -45,11 +45,13 @@ def add_dummy_ratings(cursor: sqlite3.Cursor) -> None:
             timbre, width, plausibility = set_random_ratings(recording)
             cursor.execute(f'INSERT INTO ratings (user_id, recording_id, timbre, plausibility, source_width) VALUES ({user_id}, {recording_id}, {timbre}, {plausibility}, {width})')
 
-def fill_db_with_random_data(cursor: sqlite3.Cursor) -> None:
-    delete_users(cursor)
-    delete_ratings(cursor)
-    add_dummy_users(cursor)
-    add_dummy_ratings(cursor)
+def fill_db_with_random_data() -> None:    
+    with sqlite3.connect(DB_PATH) as connection:
+        cursor = connection.cursor()
+        delete_users(cursor)
+        delete_ratings(cursor)
+        add_dummy_users(cursor)
+        add_dummy_ratings(cursor)
 
 def gather_ratings(cursor: sqlite3.Cursor) -> list:
     query = """SELECT users.id, rooms.name, conditions.distance, conditions.angle, conditions.movement, conditions.source, sentences.amplitude, ratings.timbre, ratings.source_width, ratings.plausibility
@@ -62,19 +64,22 @@ def gather_ratings(cursor: sqlite3.Cursor) -> list:
     ratings = cursor.execute(query)
     return ratings
 
-def main() -> None:
+def get_dataframe() -> pd.DataFrame:
     ratings = []
 
     with sqlite3.connect(DB_PATH) as connection:
         cursor = connection.cursor()
 
-        #fill_db_with_random_data(cursor)
         ratings_cursor = gather_ratings(cursor)
-        
         for rating in ratings_cursor:
             ratings.append(list(rating))
 
     df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'source_width', 'plausibility'])
+    return df
+
+
+def main() -> None:
+    df = get_dataframe()
     df.to_csv(r'C:\Users\Gauthier\Desktop\results_manip_dir.csv')
 
 
