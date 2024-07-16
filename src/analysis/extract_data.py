@@ -3,7 +3,7 @@ from datetime import date
 from random import gauss
 import pandas as pd
 
-DB_PATH = r'C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\manip_directivite\data\manip_directivite.db'
+DB_PATH = r'C:\Users\Gauthier\source\repos\manip_directivite\data\manip_directivite.db'
 
 def delete_users(cursor: sqlite3.Cursor) -> None:
     cursor.execute('DELETE FROM users')
@@ -61,16 +61,23 @@ def gather_ratings(cursor: sqlite3.Cursor) -> list:
     INNER JOIN sentences ON recordings.sentence_id = sentences.id"""
     ratings = cursor.execute(query)
     return ratings
+
+def main() -> None:
+    ratings = []
+
+    with sqlite3.connect(DB_PATH) as connection:
+        cursor = connection.cursor()
+
+        #fill_db_with_random_data(cursor)
+        ratings_cursor = gather_ratings(cursor)
+        
+        for rating in ratings_cursor:
+            ratings.append(list(rating))
+
+    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'source_width', 'plausibility'])
+    df.to_csv(r'C:\Users\Gauthier\Desktop\results_manip_dir.csv')
+
+
+if __name__ == '__main__':
+    main()
     
-ratings = []
-
-with sqlite3.connect(DB_PATH) as connection:
-    cursor = connection.cursor()
-
-    #fill_db_with_random_data(cursor)
-    ratings_cursor = gather_ratings(cursor)
-    
-    for rating in ratings_cursor:
-        ratings.append(list(rating))
-
-df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'source_width', 'plausibility'])
