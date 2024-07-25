@@ -3,9 +3,9 @@ from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
 import scipy.signal
 import os
+from utils_manip_directivite import HEADROTS_FOLDER
 
 (_yaw, _pitch, _roll) = ('Yaw', 'Pitch', 'Roll')
-HEADROTS_FOLDER = r'C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\Enregistrement_Anechoique\HeadRots'
 
 def get_df_suffixed_axes_labels(data_frame: pd.DataFrame) -> list[str]:
     return [axis for axis in data_frame.columns if any(map(lambda a: a in axis, [_yaw, _pitch]))]

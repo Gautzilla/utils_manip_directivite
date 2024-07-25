@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-from extract_data import get_dataframe
+from utils_manip_directivite.analysis.extract_data import get_dataframe
 
 def plot(df: pd.DataFrame):
     sns.set_theme()
     sns.catplot(x = 'movement',
-                y = 'plausibility',
+                y = 'answer_timbre',
                 col = 'angle',
                 hue = 'source',
                 data = df)
@@ -14,6 +14,7 @@ def plot(df: pd.DataFrame):
 
 def main() -> None:
     df = get_dataframe()
+    df = df.query('user > 1')
     plot(df)
 
 if __name__ == '__main__':

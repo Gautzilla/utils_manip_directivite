@@ -2,8 +2,7 @@ import sqlite3
 from datetime import date
 from random import gauss
 import pandas as pd
-
-DB_PATH = r'C:\Users\Gauthier\source\repos\manip_directivite\data\manip_directivite.db'
+from utils_manip_directivite import DB_PATH
 
 def delete_users(cursor: sqlite3.Cursor) -> None:
     cursor.execute('DELETE FROM users')

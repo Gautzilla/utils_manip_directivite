@@ -1,5 +1,5 @@
-from sentence_generator import gen_sentence_small, gen_sentence_large
-from independant_variables import get_recording_combinations, Amplitude, Room, Source
+from utils_manip_directivite.sentences_recording.sentence_generator import gen_sentence_small, gen_sentence_large
+from utils_manip_directivite.sentences_recording.independant_variables import get_recording_combinations, Amplitude, Room, Source
 import pandas as pd
 from random import random
 from itertools import product

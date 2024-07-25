@@ -1,8 +1,6 @@
 import sqlite3
 import os
-
-AUDIO_FOLDER = r'C:\Users\Gauthier\source\repos\manip_directivite\data\audio'
-DB_PATH = r'C:\Users\Gauthier\source\repos\manip_directivite\data\manip_directivite.db'
+from utils_manip_directivite import AUDIO_FOLDER, DB_PATH
 
 def get_all_audio_files() -> list:
     with sqlite3.connect(DB_PATH) as connection:
@@ -31,6 +29,7 @@ def main() -> None:
 
     missing_files = get_missing_files(audio_files_in_test = audio_files_in_test)
     print(f'Missing files: {len(missing_files)}')
+    print(missing_files)
 
 if __name__ == '__main__':
     main()

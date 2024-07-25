@@ -1,8 +1,7 @@
 import soundfile as sf
 import pyloudnorm as pyln
 import os
-
-AUDIO_FOLDER = r'C:\Users\Gauthier\source\repos\manip_directivite\data\audio'
+from utils_manip_directivite import AUDIO_FOLDER
 
 
 def equalize(files: list) -> list:
