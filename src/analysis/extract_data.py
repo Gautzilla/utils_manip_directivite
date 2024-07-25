@@ -17,9 +17,15 @@ def add_dummy_users(cursor: sqlite3.Cursor) -> None:
         ['Justine', 'Provost', date(1990, 5, 9)],
         ['Mac', 'DeMarco', date(1990, 5, 30)],
         ['Connan', 'Mockasin', date(1983, 3, 21)],
-        ['Victoria', 'Legrand', date(1981, 5, 28)]
+        ['Victoria', 'Legrand', date(1981, 5, 28)],
+        ['Frank', 'Black', date(1965, 4, 6)],
+        ['Cole', 'Alexander', date(1982, 6, 8)],
+        ['Julian', 'Casablancas', date(1978, 8, 23)],
+        ['James', 'Mercer', date(1970, 12, 26)],
+        ['Ariel', 'Pink', date(1978, 6, 24)],
+        ['Aphex', 'Twin', date(1971, 8, 18)]
         ]
-
+    
     for user in users:
         cursor.execute(f'INSERT INTO users (first_name,last_name,birth_date) VALUES ("{user[0]}", "{user[1]}", "{user[2]}")')
 
@@ -54,7 +60,7 @@ def fill_db_with_random_data() -> None:
         add_dummy_ratings(cursor)
 
 def gather_ratings(cursor: sqlite3.Cursor) -> list:
-    query = """SELECT users.id, rooms.name, conditions.distance, conditions.angle, conditions.movement, conditions.source, sentences.amplitude, ratings.timbre, ratings.source_width, ratings.plausibility
+    query = """SELECT users.id, rooms.name, conditions.distance, conditions.angle, conditions.movement, conditions.source, sentences.amplitude, ratings.timbre, ratings.plausibility, ratings.angle, ratings.movement
     FROM ratings 
     INNER JOIN recordings ON ratings.recording_id = recordings.id
     INNER JOIN rooms ON recordings.room_id = rooms.id
@@ -74,7 +80,7 @@ def get_dataframe() -> pd.DataFrame:
         for rating in ratings_cursor:
             ratings.append(list(rating))
 
-    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'source_width', 'plausibility'])
+    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'plausibility', 'angle', 'movement'])
     return df
 
 
