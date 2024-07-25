@@ -80,7 +80,7 @@ def get_dataframe() -> pd.DataFrame:
         for rating in ratings_cursor:
             ratings.append(list(rating))
 
-    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'timbre', 'plausibility', 'angle', 'movement'])
+    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'answer_amplitude', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
     return df
 
 
