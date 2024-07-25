@@ -1,0 +1,8 @@
+auto_mix_prep
+matplotlib
+numpy
+pandas
+pyloudnorm
+scipy
+seaborn
+soundfile
