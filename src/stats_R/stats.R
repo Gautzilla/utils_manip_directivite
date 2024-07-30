@@ -6,9 +6,11 @@ library(extrafont)
 library(rstatix)
 library(sjmisc) # Round values in datasets
 library(DBI)
+library(RSQLite)
+library(ggpubr)
 
 # Database connection
-db_path = "C:/Users/User/Downloads/manip_directivite.db"
+db_path = "C://Users//Gauthier//source//repos//utils_manip_directivite//data//manip_directivite.db"
 con <- dbConnect(RSQLite::SQLite(), dbname = db_path)
 df <- dbGetQuery(con, 'SELECT users.id, rooms.name AS room, conditions.distance, conditions.angle, conditions.movement, conditions.source, recordings.repetition, sentences.amplitude, ratings.timbre AS answer_timbre, ratings.plausibility AS answer_plausibility, ratings.angle AS answer_angle, ratings.movement AS answer_movement
     FROM ratings 
@@ -23,6 +25,10 @@ df <- dbGetQuery(con, 'SELECT users.id, rooms.name AS room, conditions.distance,
 df <- df %>%
   convert_as_factor(id, room, distance, angle, movement, source, repetition)
 
+# Compute z-scores
+df$answer_plausibility <- ave(df$answer_plausibility, df$id, FUN = scale)
+df$answer_timbre <- ave(df$answer_timbre, df$id, FUN = scale)
+
 # Plots default theme
 defaultFont <- element_text(color = "#4B5D67", size = 12, face = "bold")
 
@@ -35,17 +41,17 @@ theme_set(defaultTheme)
 
 # Boxplots
 fig_boxplot_plausibility <- df %>%
-  ggplot(aes(movement, answer_plausibility, colour = source)) +
+  ggplot(aes(movement, plausibility_z, colour = source)) +
   facet_grid(room ~ angle) +
   geom_boxplot(width = .1) +
-  coord_cartesian(ylim=c(0.,1.)) 
+  coord_cartesian(ylim=c(-3.,3.)) 
 fig_boxplot_plausibility
 
 fig_boxplot_timbre <- df %>%
   ggplot(aes(movement, answer_timbre, colour = source)) +
   facet_grid(room ~ angle) +
   geom_boxplot(width = .1) +
-  coord_cartesian(ylim=c(0.,1.)) 
+  coord_cartesian(ylim=c(-3.,3.)) 
 fig_boxplot_timbre
   
 # Mean + CI
@@ -54,7 +60,7 @@ fig_meanCIPlot_plausibility <- df %>%
   facet_grid(room ~ angle) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
-  coord_cartesian(ylim=c(0.,1.))
+  coord_cartesian(ylim=c(-3.,3.))
 fig_meanCIPlot_plausibility
 
 fig_meanCIPlot_timbre <- df %>%
@@ -62,7 +68,7 @@ fig_meanCIPlot_timbre <- df %>%
   facet_grid(room ~ angle) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
-  coord_cartesian(ylim=c(0.,1.))
+  coord_cartesian(ylim=c(-3.,3.))
 fig_meanCIPlot_timbre
 
 # QQ Plots
@@ -161,7 +167,7 @@ fig_source_timbre <- df %>%
   ggplot(aes(source, answer_timbre)) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
-  coord_cartesian(ylim=c(0.,1.))
+  coord_cartesian(ylim=c(-3.,3.))
 
 fig_source_timbre
 
@@ -169,7 +175,7 @@ fig_source_plausibility <- df %>%
   ggplot(aes(source, answer_plausibility)) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
-  coord_cartesian(ylim=c(0.,1.))
+  coord_cartesian(ylim=c(-3.,3.))
 
 fig_source_plausibility
 
@@ -185,7 +191,7 @@ fig_sourceXroom <- df %>%
   ggplot(aes(room, answer_plausibility, colour = source)) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
-  coord_cartesian(ylim=c(0.,1.))
+  coord_cartesian(ylim=c(-3.,3.))
 fig_sourceXroom
 
 # ggsave(fig_source_plausibility, filename = "C:\\Users\\User\\Desktop\\source_plausibility.pdf", device = cairo_pdf)
