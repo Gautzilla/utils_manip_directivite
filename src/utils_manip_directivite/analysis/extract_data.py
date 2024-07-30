@@ -3,6 +3,7 @@ from datetime import date
 from random import gauss
 import pandas as pd
 from utils_manip_directivite import DB_PATH
+from scipy.stats import zscore
 
 def delete_users(cursor: sqlite3.Cursor) -> None:
     cursor.execute('DELETE FROM users')
@@ -65,11 +66,12 @@ def gather_ratings(cursor: sqlite3.Cursor) -> list:
     INNER JOIN rooms ON recordings.room_id = rooms.id
     INNER JOIN users ON ratings.user_id = users.id
     INNER JOIN conditions ON recordings.conditions_id = conditions.id
-    INNER JOIN sentences ON recordings.sentence_id = sentences.id"""
+    INNER JOIN sentences ON recordings.sentence_id = sentences.id
+    WHERE users.id > 1"""
     ratings = cursor.execute(query)
     return ratings
 
-def get_dataframe() -> pd.DataFrame:
+def get_dataframe(z_score: bool) -> pd.DataFrame:
     ratings = []
 
     with sqlite3.connect(DB_PATH) as connection:
@@ -80,8 +82,12 @@ def get_dataframe() -> pd.DataFrame:
             ratings.append(list(rating))
 
     df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'answer_amplitude', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
-    return df
+    
+    if z_score:
+        for rating in ['answer_plausibility', 'answer_timbre']:
+            df[rating] = df.groupby('user')[rating].transform(lambda x: zscore(x, ddof = 1))
 
+    return df
 
 def main() -> None:
     df = get_dataframe()

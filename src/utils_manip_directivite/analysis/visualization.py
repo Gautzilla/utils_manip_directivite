@@ -29,7 +29,7 @@ def plot_results(df: pd.DataFrame, question: str):
     plt.show()
 
 def main() -> None:
-    df = get_dataframe()
+    df = get_dataframe(z_score = False)
     df = df.query('user > 1').sort_values(by=['source'])
     plot_results(df = df, question = 'answer_timbre')
 
