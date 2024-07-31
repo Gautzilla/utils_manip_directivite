@@ -20,6 +20,7 @@ df <- dbGetQuery(con, 'SELECT users.id, rooms.name AS room, conditions.distance,
     INNER JOIN conditions ON recordings.conditions_id = conditions.id
     INNER JOIN sentences ON recordings.sentence_id = sentences.id
     WHERE users.id > 1')
+dbDisconnect(con)
 
 # Set factors
 df <- df %>%
