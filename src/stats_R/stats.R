@@ -10,7 +10,7 @@ library(RSQLite)
 library(ggpubr)
 
 # Database connection
-db_path = "C://Users//Gauthier//source//repos//utils_manip_directivite//data//manip_directivite.db"
+db_path = "C://Users//User//Documents//Gaut//PostDoc//Manips//Directivité//manip_directivite//data//manip_directivite.db"
 con <- dbConnect(RSQLite::SQLite(), dbname = db_path)
 df <- dbGetQuery(con, 'SELECT users.id, rooms.name AS room, conditions.distance, conditions.angle, conditions.movement, conditions.source, recordings.repetition, sentences.amplitude, ratings.timbre AS answer_timbre, ratings.plausibility AS answer_plausibility, ratings.angle AS answer_angle, ratings.movement AS answer_movement
     FROM ratings 
@@ -41,7 +41,7 @@ theme_set(defaultTheme)
 
 # Boxplots
 fig_boxplot_plausibility <- df %>%
-  ggplot(aes(movement, plausibility_z, colour = source)) +
+  ggplot(aes(movement, answer_plausibility, colour = source)) +
   facet_grid(room ~ angle) +
   geom_boxplot(width = .1) +
   coord_cartesian(ylim=c(-3.,3.)) 
@@ -94,7 +94,7 @@ outliers_timbre <- df %>%
   group_by(room, source, angle, movement, distance, amplitude) %>%
   identify_outliers(answer_timbre)
 
-# Check Normality (that's not on the residuals??)
+# Check Normality per cell (residuals are checked after the ANOVA)
 
 shapiroWilk_plausibility <- df %>%
   group_by(room, source, angle, movement, distance, amplitude) %>%
@@ -144,7 +144,7 @@ shapirowilkGroupedResiduals_plausibility <- groupedResiduals_plausibility %>%
 
 View(shapirowilkGroupedResiduals_plausibility)
 
-fig_qqPlotResiduals <- groupedResiduals_plausibility %>%
+fig_qqPlotResiduals_plausibility <- groupedResiduals_plausibility %>%
   ggqqplot("residuals")
 
 ## TIMBRE
@@ -158,7 +158,7 @@ shapirowilkGroupedResiduals_timbre <- groupedResiduals_timbre %>%
 
 View(shapirowilkGroupedResiduals_timbre)
 
-fig_qqPlotResiduals <- groupedResiduals_timbre %>%
+fig_qqPlotResiduals_timbre <- groupedResiduals_timbre %>%
   ggqqplot("residuals")
 
 # Simple effects of the source figure
