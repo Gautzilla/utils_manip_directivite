@@ -96,8 +96,8 @@ def write_visualization_md_file(sentences: pd.DataFrame) -> None:
     output = '|0|1|2|\n|:---:|:---:|:---:|\n'
     for r in range(0, len(sentences), 3):
         takes = sentences.iloc[r], sentences.iloc[r+1], sentences.iloc[r+2]
-        output += '|'.join(list(map(lambda x: f'**{x.loc['ID']}** [{x.loc['d_Y']} ; {x.loc['d_P']}]' , takes))) + '\n'
-        output += '|'.join(list(map(lambda x: f'![alt text]({os.path.basename(x.loc['fig_n'])}.png)' , takes))) + '\n'
+        output += '|'.join(list(map(lambda x: f'**{x.loc["ID"]}** [{x.loc["d_Y"]} ; {x.loc["d_P"]}]' , takes))) + '\n'
+        output += '|'.join(list(map(lambda x: f'![alt text]({os.path.basename(x.loc["fig_n"])}.png)' , takes))) + '\n'
     f = open(r'C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\utils_manip_directivite\angular_difference_visualization.md', 'w')
     f.write(output)
     f.close()
@@ -105,7 +105,7 @@ def write_visualization_md_file(sentences: pd.DataFrame) -> None:
 
 def main() -> None:
 
-    sentences = pd.read_csv(r'manip-dir-data\Phrases.csv')
+    sentences = pd.read_csv(r'utils_manip_directivite/sentences_recording/Phrases.csv')
     sentences = sentences.sort_values(by = ['D','A','M','T','N','Rec_N'])
     
 
@@ -115,18 +115,17 @@ def main() -> None:
 
     for i in range(len(sentences)):
         take = sentences.iloc[i]
-        original_file = os.path.join(HEADROTS_FOLDER, f'{take['ID']}.txt')
-        repro_file = os.path.join(HEADROTS_FOLDER, f'{take['ID']}_1.txt')
-
+        original_file = os.path.join(HEADROTS_FOLDER, f'{take["ID"]}.txt')
+        repro_file = os.path.join(HEADROTS_FOLDER, f'{take["ID"]}_1.txt')
         original = create_data_frame(original_file, '_o')
         repro = create_data_frame(repro_file, '_r')
         fig_name = rf"C:\Users\labsticc\Documents\Manips\Gauthier\Directivité\Enregistrement_Anechoique\HeadRots_figs\{'_'.join(list(map(lambda x: str(x), take.iloc[:7])))}"
         plot_head_rot_comparison(dataFrame_1 = original, dataFrame_2 = repro, time_delay = 0, show_fig = False, save_fig = False, fig_name = fig_name)
-        
         diff_yaw, diff_pitch = mean_angular_diffs(original, repro)
         yaw_diffs.append(diff_yaw)
         pitch_diffs.append(diff_pitch)
         figure_names.append(fig_name)
+
     sentences.insert(loc = 7, column = 'd_Y', value = yaw_diffs)
     sentences.insert(loc = 8, column = 'd_P', value = pitch_diffs)
     sentences.insert(loc = 9, column = 'fig_n', value = figure_names)
