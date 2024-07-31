@@ -44,15 +44,13 @@ fig_boxplot_plausibility <- df %>%
   ggplot(aes(movement, answer_plausibility, colour = source)) +
   facet_grid(room ~ angle) +
   geom_boxplot(width = .1) +
-  coord_cartesian(ylim=c(-3.,3.)) 
-fig_boxplot_plausibility
+  coord_cartesian(ylim=c(-3.,3.))
 
 fig_boxplot_timbre <- df %>%
   ggplot(aes(movement, answer_timbre, colour = source)) +
   facet_grid(room ~ angle) +
   geom_boxplot(width = .1) +
-  coord_cartesian(ylim=c(-3.,3.)) 
-fig_boxplot_timbre
+  coord_cartesian(ylim=c(-3.,3.))
   
 # Mean + CI
 fig_meanCIPlot_plausibility <- df %>%
@@ -61,7 +59,6 @@ fig_meanCIPlot_plausibility <- df %>%
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
   coord_cartesian(ylim=c(-3.,3.))
-fig_meanCIPlot_plausibility
 
 fig_meanCIPlot_timbre <- df %>%
   ggplot(aes(movement, answer_timbre, colour = source)) +
@@ -69,7 +66,6 @@ fig_meanCIPlot_timbre <- df %>%
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
   coord_cartesian(ylim=c(-3.,3.))
-fig_meanCIPlot_timbre
 
 # QQ Plots
 library(ggpubr)
@@ -77,13 +73,11 @@ fig_qqPlot_plausibility <- df %>%
   ggqqplot("answer_plausibility") +
   facet_grid(room + source + angle ~ movement + distance + amplitude, labeller = "label_both") +
   theme_set(defaultTheme)
-fig_qqPlot_plausibility
 
 fig_qqPlot_timbre <- df %>%
   ggqqplot("answer_timbre") +
   facet_grid(room + source + angle ~ movement + distance + amplitude, labeller = "label_both") +
   theme_set(defaultTheme)
-fig_qqPlot_timbre
 
 # Find Outliers
 outliers_plausibility <- df %>%
@@ -101,14 +95,12 @@ shapiroWilk_plausibility <- df %>%
   shapiro_test(answer_plausibility) %>%
   mutate(Sigp = ifelse(p > 0.05, "" , ifelse(p > 0.01, "*", ifelse(p > 0.01, "**", "***")))) %>%
   round_num(3)
-View(shapiroWilk_plausibility)
 
 shapiroWilk_timbre <- df %>%
   group_by(room, source, angle, movement, distance, amplitude) %>%
   shapiro_test(answer_timbre) %>%
   mutate(Sigp = ifelse(p > 0.05, "" , ifelse(p > 0.01, "*", ifelse(p > 0.01, "**", "***")))) %>%
   round_num(3)
-View(shapiroWilk_timbre)
 
 # ANOVA 
 ## PLAUSIBILITY
@@ -119,8 +111,6 @@ anovaResults_plausibility <- df %>%
 anovaResultsCorrected_plausibility <- get_anova_table(anovaResults_plausibility, correction = "auto") %>%
   round_num(3)
 
-View(anovaResultsCorrected_plausibility)
-
 ## TIMBRE
 
 anovaResults_timbre <- df %>%
@@ -128,8 +118,6 @@ anovaResults_timbre <- df %>%
 
 anovaResultsCorrected_timbre <- get_anova_table(anovaResults_timbre, correction = "auto") %>%
   round_num(3)
-
-View(anovaResultsCorrected_timbre)
 
 # ANOVA Residuals
 
@@ -141,8 +129,6 @@ groupedResiduals_plausibility <- data.frame(residuals = c(t(anovaResiduals_plaus
 
 shapirowilkGroupedResiduals_plausibility <- groupedResiduals_plausibility %>%
   shapiro_test(residuals)
-
-View(shapirowilkGroupedResiduals_plausibility)
 
 fig_qqPlotResiduals_plausibility <- groupedResiduals_plausibility %>%
   ggqqplot("residuals")
@@ -156,8 +142,6 @@ groupedResiduals_timbre <- data.frame(residuals = c(t(anovaResiduals_timbre), st
 shapirowilkGroupedResiduals_timbre <- groupedResiduals_timbre %>%
   shapiro_test(residuals)
 
-View(shapirowilkGroupedResiduals_timbre)
-
 fig_qqPlotResiduals_timbre <- groupedResiduals_timbre %>%
   ggqqplot("residuals")
 
@@ -169,22 +153,16 @@ fig_source_timbre <- df %>%
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
   coord_cartesian(ylim=c(-3.,3.))
 
-fig_source_timbre
-
 fig_source_plausibility <- df %>%
   ggplot(aes(source, answer_plausibility)) +
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
   coord_cartesian(ylim=c(-3.,3.))
 
-fig_source_plausibility
-
 # Exemple interaction: Source x Room post-hoc (room moderator)
 sourceXroom_roomModerator <- df %>%
   group_by(room) %>%
   pairwise_t_test(answer_plausibility ~ source, paired = TRUE, p.adjust.method = "bonferroni")
-
-View(sourceXroom_roomModerator)
 
 # Source x Room figure
 fig_sourceXroom <- df %>%
@@ -192,6 +170,5 @@ fig_sourceXroom <- df %>%
   stat_summary(fun = mean, geom = "point", position = position_dodge(width = .1)) +
   stat_summary(fun.data = mean_cl_normal, geom = "errorbar", linewidth = 1, width = .1, position = "dodge") +
   coord_cartesian(ylim=c(-3.,3.))
-fig_sourceXroom
 
 # ggsave(fig_source_plausibility, filename = "C:\\Users\\User\\Desktop\\source_plausibility.pdf", device = cairo_pdf)
