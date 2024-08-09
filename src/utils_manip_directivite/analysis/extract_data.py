@@ -4,6 +4,8 @@ from random import gauss
 import pandas as pd
 from utils_manip_directivite import DB_PATH
 from scipy.stats import zscore
+from datetime import date
+from statistics import mean, stdev
 
 def delete_users(cursor: sqlite3.Cursor) -> None:
     cursor.execute('DELETE FROM users')
@@ -81,7 +83,7 @@ def get_dataframe(z_score: bool) -> pd.DataFrame:
         for rating in ratings_cursor:
             ratings.append(list(rating))
 
-    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'answer_amplitude', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
+    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
     
     if z_score:
         for rating in ['answer_plausibility', 'answer_timbre']:
@@ -89,9 +91,28 @@ def get_dataframe(z_score: bool) -> pd.DataFrame:
 
     return df
 
+def get_birth_dates() -> list:
+    with sqlite3.connect(DB_PATH) as connection:
+        cursor = connection.cursor()
+        query = "SELECT users.birth_date FROM users WHERE users.id > 1"
+        birth_dates = [date(*[int(s) for s in c[0].split('-')]) for c in cursor.execute(query)]
+    return birth_dates
+
+def age(birth_date: date):
+    test_date = date(year = 2024, month = 8, day = 1)
+    return test_date.year - birth_date.year - ((test_date.month, test_date.day) < (birth_date.month, birth_date.day))
+
+def get_ages() -> list:
+    birth_dates = get_birth_dates()
+    return [age(bd) for bd in birth_dates]
+
+def age_summary() -> str:
+    ages = get_ages()
+    return f'Participants were {min(ages)} to {max(ages)} years old (µ = {mean(ages)}, σ ={stdev(ages)}).'
+
 def main() -> None:
-    df = get_dataframe()
-    df.to_csv(r'C:\Users\Gauthier\Desktop\results_manip_dir.csv')
+    df = get_dataframe(z_score=True)
+    df.to_csv(r'C:\Users\User\Desktop\results_manip_dir.csv')
 
 
 if __name__ == '__main__':
