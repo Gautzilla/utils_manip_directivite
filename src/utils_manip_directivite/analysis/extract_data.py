@@ -62,7 +62,7 @@ def fill_db_with_random_data() -> None:
         add_dummy_ratings(cursor)
 
 def gather_ratings(cursor: sqlite3.Cursor) -> list:
-    query = """SELECT users.id, rooms.name, conditions.distance, conditions.angle, conditions.movement, conditions.source, sentences.amplitude, ratings.timbre, ratings.plausibility, ratings.angle, ratings.movement
+    query = """SELECT users.id, rooms.name, conditions.distance, conditions.angle, conditions.movement, conditions.source, sentences.amplitude, recordings.repetition, ratings.timbre, ratings.plausibility, ratings.angle, ratings.movement
     FROM ratings 
     INNER JOIN recordings ON ratings.recording_id = recordings.id
     INNER JOIN rooms ON recordings.room_id = rooms.id
@@ -83,8 +83,8 @@ def get_dataframe(z_score: bool) -> pd.DataFrame:
         for rating in ratings_cursor:
             ratings.append(list(rating))
 
-    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
-    
+    df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'repetition', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
+
     if z_score:
         for rating in ['answer_plausibility', 'answer_timbre']:
             df[rating] = df.groupby('user')[rating].transform(lambda x: zscore(x, ddof = 1))
