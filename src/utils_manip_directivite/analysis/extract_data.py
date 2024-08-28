@@ -73,6 +73,11 @@ def gather_ratings(cursor: sqlite3.Cursor) -> list:
     ratings = cursor.execute(query)
     return ratings
 
+def stimulus_col(row):
+    movement = 'Dyn' if row['movement'] else 'Sta'
+    sentence_structure = '1' if row['amplitude'] == 'Small' else '2'
+    return movement + sentence_structure
+
 def get_dataframe(z_score: bool) -> pd.DataFrame:
     ratings = []
 
@@ -84,6 +89,9 @@ def get_dataframe(z_score: bool) -> pd.DataFrame:
             ratings.append(list(rating))
 
     df = pd.DataFrame(ratings, columns = ['user', 'room', 'distance', 'angle', 'movement', 'source', 'amplitude', 'repetition', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement'])
+    df['stimulus'] = df.apply(stimulus_col, axis = 1)
+    df = df[['user', 'room', 'distance', 'angle', 'stimulus', 'source', 'repetition', 'answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement']]
+    df = df.groupby(['user', 'room', 'distance', 'angle', 'stimulus', 'source'], as_index = False)[['answer_timbre', 'answer_plausibility', 'answer_angle', 'answer_movement']].mean()
 
     if z_score:
         for rating in ['answer_plausibility', 'answer_timbre']:
