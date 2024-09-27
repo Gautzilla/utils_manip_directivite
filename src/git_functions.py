@@ -14,6 +14,10 @@ def func_a():
     c = "Ca gaze ? Et on a aussi changé ça!"
     print(c + ' !!! ')
 
+    # functionality added in branch B commit 3:
+    d = "ou quoi ?"
+    print(d)
+
 
     # add functionality in branch C:
     p = [1, 2, 3]
