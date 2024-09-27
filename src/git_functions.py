@@ -8,4 +8,9 @@ def func_a():
     c = "Ca gaze ?"
     print(c)
 
+
+    # add functionality in branch C:
+    p = [1, 2, 3]
+    print(p)
+
     print('This functions was added to the main branch.')
