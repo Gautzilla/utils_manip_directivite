@@ -7,7 +7,7 @@ def second_d_func():
 def func_a():
 
     #functionality added in branch B commit 1:
-    b = 'Salut mec'
+    b = 'Salut mec MAIS ON A CHANGE CA DANS LE MAIN'
     print(b)
 
     #functionality added in branch B commit 2:
