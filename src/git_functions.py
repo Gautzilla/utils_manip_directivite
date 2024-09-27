@@ -11,8 +11,8 @@ def func_a():
     print(b)
 
     #functionality added in branch B commit 2:
-    c = "Ca gaze ?"
-    print(c)
+    c = "Ca gaze ? Et on a aussi changé ça!"
+    print(c + ' !!! ')
 
 
     # add functionality in branch C:
