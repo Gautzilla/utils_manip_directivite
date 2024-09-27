@@ -12,7 +12,7 @@ def func_a():
 
     #functionality added in branch B commit 2:
     c = "Ca gaze ?"
-    print(c)
+    print(c + '??? ')
 
     # functionality added in branch B commit 3:
     d = "ou quoi ?"
